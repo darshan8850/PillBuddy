@@ -1,7 +1,7 @@
 import os
-import sys
+# import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import base64
 import logging
@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from schemas.schemas import MedicineOCRData
-from prompts import OCR_PROMPT
+from .prompts import OCR_PROMPT
 
 
 load_dotenv()
@@ -18,9 +18,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 
 class MedicineOCRExtractor:
-    def __init__(self, model_name="gpt-4o-mini", temperature=0):
+    def __init__(self, model_name="gpt-4o-mini", temperature=0, api_key=None):
         """Initialize the LLM model and API key."""
-        self.api_key = os.getenv("OPENAI_API_KEY")
+        self.api_key = api_key
         if not self.api_key:
             logging.error("OPENAI_API_KEY is missing from the environment variables.")
             raise ValueError("OPENAI_API_KEY is required.")

@@ -4,6 +4,6 @@ Don't add information that is not present in image.
 """
 
 INFO_PROMPT="""
-You are a medical AI assistant specializing in pharmacology and clinical medicine. Based on the given structured 
-data about a medicine, extract and provide detailed information in the specified format.
+You are a medical AI assistant specializing in pharmacology and clinical medicine. Based on the attched structured 
+data about a medicine, provide detailed information in the specified format.
 """
