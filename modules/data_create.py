@@ -48,7 +48,9 @@ class MedicineDataImporter:
     def _create_medicine_nodes(self, tx, medicine_data):
         for item in medicine_data:
             if item['name'] == 'MedicineDetailedInfo':
-                args = self.filter_none_values(item['args'])
+                args = item['args']
+                none_fields = self.get_none_fields(item['args'])
+                logger.info(f"None fields: {none_fields}")
                 logger.info(f"Processing medicine: {args['brand_name']}")
                 
                 # Create Medicine node
@@ -64,7 +66,7 @@ class MedicineDataImporter:
                 logger.debug(f"Created or merged Medicine node for {args['brand_name']}")
 
                 # Create Ingredient nodes and relationships
-                if 'ingredients' in args:
+                if 'ingredients' in args and 'ingredients' not in none_fields:
                     for ingredient in args['ingredients']:
                         query = """
                         MATCH (m:Medicine {brand_name: $brand_name})
@@ -75,7 +77,7 @@ class MedicineDataImporter:
                         tx.run(query, brand_name=args['brand_name'], **ingredient)
                 
                 # Create Use nodes and relationships
-                if 'uses' in args:
+                if 'uses' in args and 'uses' not in none_fields:
                     for use in args['uses']:
                         query = """
                         MATCH (m:Medicine {brand_name: $brand_name})
@@ -85,7 +87,7 @@ class MedicineDataImporter:
                         tx.run(query, brand_name=args['brand_name'], use=use)
                 
                 # Create DosageGuideline node and relationship
-                if 'dosage_guidelines' in args:
+                if 'dosage_guidelines' in args and 'dosage_guidelines' not in none_fields:
                     query = """
                     MATCH (m:Medicine {brand_name: $brand_name})
                     MERGE (dg:DosageGuideline {max_daily_dosage: $max_daily_dosage})
@@ -94,7 +96,7 @@ class MedicineDataImporter:
                     tx.run(query, brand_name=args['brand_name'], **args['dosage_guidelines'])
 
                 # Create OverdoseEffect nodes and relationships
-                if 'overdose_effects' in args['dosage_guidelines']:
+                if 'overdose_effects' in args['dosage_guidelines'] and 'dosage_guidelines.overdose_effects' not in none_fields:
                     for effect in args['dosage_guidelines']['overdose_effects']:
                         query = """
                         MATCH (dg:DosageGuideline)-[:HAS_DOSAGE_GUIDELINE]-(m:Medicine {brand_name: $brand_name})
@@ -104,7 +106,7 @@ class MedicineDataImporter:
                         tx.run(query, brand_name=args['brand_name'], effect=effect)
                 
                 # Create AdministrationInstruction nodes and relationships
-                if 'administration_instructions' in args:
+                if 'administration_instructions' in args and 'administration_instructions' not in none_fields:
                     for key, instruction in args['administration_instructions'].items():
                         query = """
                         MATCH (m:Medicine {brand_name: $brand_name})
@@ -114,7 +116,7 @@ class MedicineDataImporter:
                         tx.run(query, brand_name=args['brand_name'], key=key, instruction=instruction)
                 
                 # Create Separate Nodes for with_what_to_take and before_or_after_food
-                if 'with_what_to_take' in args['administration_instructions']:
+                if 'with_what_to_take' in args['administration_instructions'] and 'administration_instructions.with_what_to_take' not in none_fields:
                     query = """
                     MATCH (m:Medicine {brand_name: $brand_name})
                     MERGE (wwt:WithWhatToTake {instruction: $instruction})
@@ -122,7 +124,7 @@ class MedicineDataImporter:
                     """
                     tx.run(query, brand_name=args['brand_name'], instruction=args['administration_instructions']['with_what_to_take'])
 
-                if 'before_or_after_food' in args['administration_instructions']:
+                if 'before_or_after_food' in args['administration_instructions'] and 'administration_instructions.before_or_after_food' not in none_fields:
                     query = """
                     MATCH (m:Medicine {brand_name: $brand_name})
                     MERGE (baf:BeforeOrAfterFood {instruction: $instruction})
@@ -131,7 +133,7 @@ class MedicineDataImporter:
                     tx.run(query, brand_name=args['brand_name'], instruction=args['administration_instructions']['before_or_after_food'])
                 
                 # Create MechanismOfAction node and relationships
-                if 'mechanism_of_action' in args:
+                if 'mechanism_of_action' in args and 'mechanism_of_action' not in none_fields:
                     query = """
                     MATCH (m:Medicine {brand_name: $brand_name})
                     MERGE (moa:MechanismOfAction {description: $description})
@@ -140,7 +142,7 @@ class MedicineDataImporter:
                     tx.run(query, brand_name=args['brand_name'], **args['mechanism_of_action'])
                 
                 # Create MechanismStep nodes and relationships
-                if 'detailed_steps' in args['mechanism_of_action']:
+                if 'detailed_steps' in args['mechanism_of_action'] and 'mechanism_of_action.detailed_steps' not in none_fields:
                     for step in args['mechanism_of_action']['detailed_steps']:
                         query = """
                         MATCH (moa:MechanismOfAction)-[:WORKS_BY]-(m:Medicine {brand_name: $brand_name})
@@ -153,7 +155,7 @@ class MedicineDataImporter:
 
                 
                 # Create SideEffect nodes and relationships
-                if 'side_effects' in args:
+                if 'side_effects' in args and 'side_effects' not in none_fields:
                     for effect in args['side_effects']:
                         query = """
                         MERGE (se:SideEffect {name: $effect})
@@ -164,7 +166,7 @@ class MedicineDataImporter:
                         tx.run(query, brand_name=args['brand_name'], effect=effect)
                 
                 # Create DrugInteraction nodes and relationships
-                if 'drug_interactions' in args:
+                if 'drug_interactions' in args and 'drug_interactions' not in none_fields:
                     for interaction in args['drug_interactions']:
                         query = """
                         MERGE (di:DrugInteraction {drug_name: $drug_name})
@@ -176,7 +178,7 @@ class MedicineDataImporter:
                         tx.run(query, brand_name=args['brand_name'], **interaction)
                 
                 # Create StorageCondition nodes and relationships
-                if 'storage_conditions' in args['storage_and_shelf_life']:
+                if 'storage_conditions' in args['storage_and_shelf_life'] and 'storage_and_shelf_life.storage_conditions' not in none_fields:
                     for condition in args['storage_and_shelf_life']['storage_conditions']:
                         query = """
                         MERGE (sc:StorageCondition {condition: $condition})
@@ -187,7 +189,7 @@ class MedicineDataImporter:
                         tx.run(query, brand_name=args['brand_name'], condition=condition)
                 
                 # Create ShelfLife node and relationship
-                if 'shelf_life' in args['storage_and_shelf_life']:
+                if 'shelf_life' in args['storage_and_shelf_life'] and 'storage_and_shelf_life.shelf_life' not in none_fields:
                     query = """
                     MERGE (sl:ShelfLife {duration: $shelf_life})
                     WITH sl

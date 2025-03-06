@@ -19,7 +19,6 @@ class Pipeline:
         if not medicine_info:
             return
         medicine_info=medicine_info[0]
-        print("Medicine Info: ", medicine_info)
         medicine_data = self.details_extractor.generate_medicine_info(medicine_info)
         if not medicine_data:
             return

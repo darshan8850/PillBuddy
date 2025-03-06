@@ -45,13 +45,13 @@ class Neo4jQueryHandler:
             self.logger.error(f"Error processing query: {str(e)}", exc_info=True)
             raise
 
-if __name__ == "__main__":
-    handler = Neo4jQueryHandler(
-        neo4j_url="bolt://localhost:7687",
-        neo4j_username="neo4j",
-        neo4j_password="password",
-        openai_api_key="your_openai_api_key_here"
-    )
+# if __name__ == "__main__":
+#     handler = Neo4jQueryHandler(
+#         neo4j_url="bolt://localhost:7687",
+#         neo4j_username="neo4j",
+#         neo4j_password="","
+#         openai_api_key=""
+#     )
     
-    result = handler.query("Who played in Top Gun?")
-    print(result)
+#     result = handler.query("In what cases should I take Dolo-650?")
+#     print(result)
